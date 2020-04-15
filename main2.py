@@ -50,19 +50,39 @@ def caricaDaFile(num_lines_num_parsed,lista_video,file):
 
 print("inizio")
 
-LISTA_IMMAGINI_PATH="/home/stegon/PycharmProjects/IMMAGINI/"
-LISTA_VIDEO_PATH="/run/media/stegon/131ac7e7-32e9-457b-92e0-7068ecf6c2d7/MEGA2/"
-#OUTPUT_DIR="OUTPUT_DIR/"
-OUTPUT_DIR="/run/media/stegon/131ac7e7-32e9-457b-92e0-7068ecf6c2d7/MEGA2/"
-LOADER_FRAME_DIR="/home/stegon/PycharmProjects/LOADER/"
+out = subprocess.check_output("ls | grep config.cfg | wc -l", shell=True).rstrip()
 
-num_lines_valori = subprocess.check_output("ls -p "+LISTA_IMMAGINI_PATH+" | grep -v / > " +LISTA_IMMAGINI_PATH+"lista.txt", shell=True).rstrip()# sum(1 for line in open('VALORI.txt'))
-num_lines_video = subprocess.check_output("ls -p  "+LISTA_VIDEO_PATH+" | grep -v / > " +LISTA_VIDEO_PATH+"lista.txt", shell=True).rstrip()#sum(1 for line in open('LISTA_VIDEO'))
+if int(out)==0 :
+    subprocess.check_output("echo '/home/stegon/PycharmProjects/IMMAGINI/' >>config.cfg ", shell=True).rstrip()
+    subprocess.check_output("echo '/run/media/stegon/131ac7e7-32e9-457b-92e0-7068ecf6c2d7/MEGA2/' >>config.cfg ", shell=True).rstrip()
+    subprocess.check_output("echo '/run/media/stegon/131ac7e7-32e9-457b-92e0-7068ecf6c2d7/MEGA2/' >>config.cfg ", shell=True).rstrip()
+    subprocess.check_output("echo '/home/stegon/PycharmProjects/LOADER/' >>config.cfg ", shell=True).rstrip()
 
-comando_2="more " +LISTA_IMMAGINI_PATH+"lista.txt | wc -l"
-print (num_lines_valori)
-#num_lines_valori = subprocess.check_output("more " +LISTA_IMMAGINI_PATH+"lista.txt | wc -l", shell=True).rstrip()# sum(1 for line in open('VALORI.txt'))
-#num_lines_video = subprocess.check_output("more " +LISTA_VIDEO_PATH+"lista.txt | wc -l", shell=True).rstrip()#sum(1 for line in open('LISTA_VIDEO'))
+
+fileCfg = open('config.cfg', 'r')
+
+
+LISTA_IMMAGINI_PATH=fileCfg.readline().rstrip()
+LISTA_VIDEO_PATH=fileCfg.readline().rstrip()
+OUTPUT_DIR=fileCfg.readline().rstrip()
+LOADER_FRAME_DIR=fileCfg.readline().rstrip()
+
+fileCfg.close()
+
+##LISTA_IMMAGINI_PATH="/home/simo/Downloads/riconoscitore/IMMAGINI/"
+##LISTA_VIDEO_PATH="/home/simo/Downloads/riconoscitore/MEGA2/"
+##OUTPUT_DIR="/home/simo/Downloads/riconoscitore/MEGAOUT/"
+##LOADER_FRAME_DIR="/home/simo/Downloads/riconoscitore/LOADER/"
+
+#num_lines_valori = subprocess.check_output("ls -p "+LISTA_IMMAGINI_PATH+" | grep -v / > " +LISTA_IMMAGINI_PATH+"lista.txt", shell=True).rstrip()# sum(1 for line in open('VALORI.txt'))
+#num_lines_video = subprocess.check_output("ls -p  "+LISTA_VIDEO_PATH+" | grep -v / > " +LISTA_VIDEO_PATH+"lista.txt", shell=True).rstrip()#sum(1 for line in open('LISTA_VIDEO'))
+
+
+subprocess.call("find " + LISTA_IMMAGINI_PATH + " -maxdepth 1 -type f -exec basename \"{}\" > " +LISTA_IMMAGINI_PATH+"lista.txt \\;", shell=True)# sum(1 for line in open('VALORI.txt'))
+subprocess.call("find " + LISTA_VIDEO_PATH + " -maxdepth 1 -type f -exec basename \"{}\" > " +LISTA_VIDEO_PATH+"lista.txt \\;", shell=True)# sum(1 for line in open('VALORI.txt'))
+
+
+
 num_lines_valori_num=subprocess.check_output(['wc', '-l', LISTA_IMMAGINI_PATH+"lista.txt"]).decode("utf-8")
 num_lines_video_num=subprocess.check_output(['wc', '-l', LISTA_VIDEO_PATH+"lista.txt"]).decode("utf-8")
 
