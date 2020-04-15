@@ -39,13 +39,22 @@ def spostaFile(image_base, video, y):
 
 ####################################################################
 
+def caricaDaFile(num_lines_num_parsed,lista_video,file):
+    for v in range(num_lines_video_num_parsed):  ## carico all'interno dell'array
+
+        lista_video.append(file.readline().rstrip())
+
+    file.close()
+
+
+
 print("inizio")
 
-LISTA_IMMAGINI_PATH="/home/stegon/PycharmProjects/riconoscitore/IMMAGINI/"
+LISTA_IMMAGINI_PATH="/home/stegon/PycharmProjects/IMMAGINI/"
 LISTA_VIDEO_PATH="/run/media/stegon/131ac7e7-32e9-457b-92e0-7068ecf6c2d7/MEGA2/"
 #OUTPUT_DIR="OUTPUT_DIR/"
 OUTPUT_DIR="/run/media/stegon/131ac7e7-32e9-457b-92e0-7068ecf6c2d7/MEGA2/"
-LOADER_FRAME_DIR="/home/stegon/PycharmProjects/riconoscitore/LOADER/"
+LOADER_FRAME_DIR="/home/stegon/PycharmProjects/LOADER/"
 
 num_lines_valori = subprocess.check_output("ls -p "+LISTA_IMMAGINI_PATH+" | grep -v / > " +LISTA_IMMAGINI_PATH+"lista.txt", shell=True).rstrip()# sum(1 for line in open('VALORI.txt'))
 num_lines_video = subprocess.check_output("ls -p  "+LISTA_VIDEO_PATH+" | grep -v / > " +LISTA_VIDEO_PATH+"lista.txt", shell=True).rstrip()#sum(1 for line in open('LISTA_VIDEO'))
@@ -71,19 +80,14 @@ check = False
 num_lines_video_num_parsed=int(num_lines_video_num[:2])
 num_lines_valori_num_parsed=int(num_lines_valori_num[:2])
 
+caricaDaFile(num_lines_video_num_parsed,lista_video,fileVal_lista)
+caricaDaFile(num_lines_valori_num,image_base,fileVal)
 
-for v in range(num_lines_video_num_parsed):  ## carico i video all'interno dell'array
 
-    lista_video.append(fileVal_lista.readline())
 
-fileVal_lista.close()
 # print(lista_video[v])
 
-for i in range(num_lines_valori_num_parsed):
-    # image_base.append(fileVal.readline().rstrip().replace(".jpg","").replace(".JPG","").replace(".png","").replace(".PNG",""))
-    image_base.append(fileVal.readline().rstrip())
 
-fileVal.close()
 
 for k in range(num_lines_video_num_parsed):
 
@@ -110,6 +114,7 @@ for k in range(num_lines_video_num_parsed):
 
             # confronto immagini
             image_frame = face_recognition.load_image_file(filename)
+            doCheck=0
 
             try:
 
@@ -118,10 +123,12 @@ for k in range(num_lines_video_num_parsed):
             except:
                 print("non ci sono volti nell'immagine frame")
                 image_frame_encode = None
+                doCheck=1
+
 
             for y in range(num_lines_valori_num_parsed):  ##
 
-                if LISTA_IMMAGINI_PATH+image_base[y]!=LISTA_IMMAGINI_PATH+"lista.txt" :
+                if LISTA_IMMAGINI_PATH+image_base[y]!=LISTA_IMMAGINI_PATH+"lista.txt" and doCheck!=0 :
                     res = []
                     # res[0]=False
                 #    print("utilizzo l'immagine %s" %(LISTA_IMMAGINI_PATH+image_base[y]))
@@ -143,7 +150,7 @@ for k in range(num_lines_video_num_parsed):
                     if exit_attempt == True:
                         count_matches[y]=count_matches[y]+1
                         print("LA PERSONA E LA STESSA STONKS aggiungo un match,attualmente sono %s" % (count_matches[y]))
-                        if count_matches[y]>3 :
+                        if count_matches[y]>=3 :
                             spostaFile(LISTA_IMMAGINI_PATH+image_base[y], video, y)
                             check = True
                             break
