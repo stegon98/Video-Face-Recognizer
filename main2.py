@@ -69,13 +69,7 @@ LOADER_FRAME_DIR=fileCfg.readline().rstrip()
 
 fileCfg.close()
 
-##LISTA_IMMAGINI_PATH="/home/simo/Downloads/riconoscitore/IMMAGINI/"
-##LISTA_VIDEO_PATH="/home/simo/Downloads/riconoscitore/MEGA2/"
-##OUTPUT_DIR="/home/simo/Downloads/riconoscitore/MEGAOUT/"
-##LOADER_FRAME_DIR="/home/simo/Downloads/riconoscitore/LOADER/"
 
-#num_lines_valori = subprocess.check_output("ls -p "+LISTA_IMMAGINI_PATH+" | grep -v / > " +LISTA_IMMAGINI_PATH+"lista.txt", shell=True).rstrip()# sum(1 for line in open('VALORI.txt'))
-#num_lines_video = subprocess.check_output("ls -p  "+LISTA_VIDEO_PATH+" | grep -v / > " +LISTA_VIDEO_PATH+"lista.txt", shell=True).rstrip()#sum(1 for line in open('LISTA_VIDEO'))
 
 
 subprocess.call("find " + LISTA_IMMAGINI_PATH + " -maxdepth 1 -type f -exec basename \"{}\" > " +LISTA_IMMAGINI_PATH+"lista.txt \\;", shell=True)# sum(1 for line in open('VALORI.txt'))
@@ -116,71 +110,77 @@ for k in range(num_lines_video_num_parsed):
     video = LISTA_VIDEO_PATH+lista_video[k].rstrip()
     print(video)
     vidcap = cv2.VideoCapture(video)
-    success, image = vidcap.read()
-    count = 0
+    #success, image = vidcap.read()
+    success=True
+    count = 1000
     count_matches=[0]*num_lines_valori_num_parsed
 
     #while count < 150001 and check == False and video!=LISTA_VIDEO_PATH+"lista.txt":
     while success ==True and check == False and video!=LISTA_VIDEO_PATH+"lista.txt":
         ##TO DO impostare un triplo check per essere sicuri del match
+        ##success, image = vidcap.read()
+        vidcap.set(cv2.CAP_PROP_POS_FRAMES, count)
         success, image = vidcap.read()
+        print("aa")
 
-        if (count % 1000 == 0 and count > 1):
+        #success, image = vidcap.read()
 
-            print(LOADER_FRAME_DIR+"frame%d.jpg" % count)
-            filename = LOADER_FRAME_DIR+"frame" + str(count) + ".jpg"
-            print(filename)
-            cv2.imwrite(filename, image)  # save frame as JPEG file
+       ## if (count % 1000 == 0 and count > 1):
 
-            # confronto immagini
-            image_frame = face_recognition.load_image_file(filename)
-            doCheck=0
+        print(LOADER_FRAME_DIR+"frame%d.jpg" % count)
+        filename = LOADER_FRAME_DIR+"frame" + str(count) + ".jpg"
+        print(filename)
+        cv2.imwrite(filename, image)  # save frame as JPEG file
 
-            try:
+        # confronto immagini
+        image_frame = face_recognition.load_image_file(filename)
+        doCheck=0
 
-                image_frame_encode = face_recognition.face_encodings(image_frame)[0]
+        try:
 
-            except:
-                print("non ci sono volti nell'immagine frame")
-                image_frame_encode = None
-                doCheck=1
+            image_frame_encode = face_recognition.face_encodings(image_frame)[0]
+
+        except:
+            print("non ci sono volti nell'immagine frame")
+            image_frame_encode = None
+            doCheck=1
 
 
-            for y in range(num_lines_valori_num_parsed):  ##
+        for y in range(num_lines_valori_num_parsed):  ##
 
-                if LISTA_IMMAGINI_PATH+image_base[y]!=LISTA_IMMAGINI_PATH+"lista.txt" and doCheck!=0 :
-                    res = []
-                    # res[0]=False
-                #    print("utilizzo l'immagine %s" %(LISTA_IMMAGINI_PATH+image_base[y]))
-                    image_conf = face_recognition.load_image_file(LISTA_IMMAGINI_PATH+image_base[y])
-                    image_conf_encode = face_recognition.face_encodings(image_conf)[0]
-                    #print(image_conf_encode)
-                    #print(image_frame_encode)
+            if LISTA_IMMAGINI_PATH+image_base[y]!=LISTA_IMMAGINI_PATH+"lista.txt" and doCheck==0 :
+                res = []
+                # res[0]=False
+            #    print("utilizzo l'immagine %s" %(LISTA_IMMAGINI_PATH+image_base[y]))
+                image_conf = face_recognition.load_image_file(LISTA_IMMAGINI_PATH+image_base[y])
+                image_conf_encode = face_recognition.face_encodings(image_conf)[0]
+                #print(image_conf_encode)
+                #print(image_frame_encode)
 
-                    try:
-                        res = face_recognition.compare_faces([image_conf_encode], image_frame_encode)
-                    except:
-                        print("nessun match tra le immagini")
+                try:
+                    res = face_recognition.compare_faces([image_conf_encode], image_frame_encode)
+                except:
+                    print("nessun match tra le immagini")
 
-                    try:
-                        exit_attempt = res[0]
-                    except:
-                        exit_attempt = False
+                try:
+                    exit_attempt = res[0]
+                except:
+                    exit_attempt = False
 
-                    if exit_attempt == True:
-                        count_matches[y]=count_matches[y]+1
-                        print("LA PERSONA E LA STESSA STONKS aggiungo un match,attualmente sono %s" % (count_matches[y]))
-                        if count_matches[y]>=3 :
-                            spostaFile(LISTA_IMMAGINI_PATH+image_base[y], video, y)
-                            check = True
-                            break
+                if exit_attempt == True:
+                    count_matches[y]=count_matches[y]+1
+                    print("LA PERSONA E LA STESSA STONKS aggiungo un match,attualmente sono %s" % (count_matches[y]))
+                    if count_matches[y]>=3 :
+                        spostaFile(LISTA_IMMAGINI_PATH+image_base[y], video, y)
+                        check = True
+                        break
 
 
 
         if success==False:
             print("non ho trovato nessun match sposto in altro")
             spostaFile("ALTRO",video,y)
-        count += 1
+        count += 1000
 
 # image_know=face_recognition.load_image_file("/home/stegon/PycharmProjects/riconoscitore/enrico1.jpg");
 # image2_know=face_recognition.load_image_file("/home/stegon/PycharmProjects/riconoscitore/andreagale.png")
