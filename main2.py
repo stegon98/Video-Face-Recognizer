@@ -2,7 +2,7 @@ import face_recognition
 import cv2
 import os
 import subprocess
-import numpy
+
 
 
 def spostaFile(image_base, video, y):
@@ -27,7 +27,6 @@ def spostaFile(image_base, video, y):
         print("lancio comando %s" % comando)
         output = subprocess.check_output(comando, shell=True)
 
-    #comando = "cp '" + video + "' "+ OUTPUT_DIR + basename + "/ "
     comando = "mv '" + video + "' '"+ OUTPUT_DIR + basename + "/"+video_name+"' 2>/dev/null"
     print("lancio comando %s" % comando)
 
