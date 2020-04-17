@@ -2,7 +2,7 @@ import face_recognition
 import cv2
 import os
 import subprocess
-
+import timeit
 
 
 def spostaFile(image_base, video, y):
@@ -126,6 +126,7 @@ for i in range(num_lines_valori_num_parsed):
 image_unique_list=getUniqueValueList(image_aus)
 print(image_unique_list)
 
+
 image_encoded=imageEncodeList()
 
 
@@ -158,15 +159,17 @@ for k in range(num_lines_video_num_parsed):
             #print(LOADER_FRAME_DIR+"frame%d.jpg" % count)
             filename = LOADER_FRAME_DIR+"frame" + str(count) + ".jpg"
             print(filename)
-            cv2.imwrite(filename, image)  # save frame as JPEG file
-
+            #cv2.imwrite(filename, image)  # save frame as JPEG file
+            rgb_small=cv2.cvtColor(image,4)
             # confronto immagini
-            image_frame = face_recognition.load_image_file(filename)
+            #image_frame = face_recognition.load_image_file(filename)
+            #image_frame = face_recognition.load_image_file(rgb_small)
             doCheck=0
 
             try:
 
-                image_frame_encode = face_recognition.face_encodings(image_frame)[0]
+            #    image_frame_encode = face_recognition.face_encodings(image_frame)[0]
+                image_frame_encode = face_recognition.face_encodings(rgb_small)[0]
 
             except:
                 print("non ci sono volti nell'immagine frame")
