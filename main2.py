@@ -4,15 +4,19 @@ import os
 import subprocess
 import threading
 from threading import Thread
+from multiprocessing import Process
 import time
 
-class IlMioThread (Thread):
-   def __init__(self, num):
-      threading.Thread.__init__(self)
-      self.num = num
-   def run(self):
-      print ("Thr avviato")
-      function(self.num)
+#I thread sono stati accantonati in quanto in python non sono gestiti in maniera corretta, abbiamo quindi optato per l'utilizzo di piu' processi
+#https://stackoverflow.com/questions/10789042/python-multi-threading-slower-than-serial
+
+#class IlMioThread (Thread):
+#   def __init__(self, num):
+#      threading.Thread.__init__(self)
+#      self.num = num
+#   def run(self):
+#      print ("Thr avviato")
+#      function(self.num)
 
 def spostaFile(image_base, video, y):
 
@@ -28,7 +32,7 @@ def spostaFile(image_base, video, y):
 
     comando = "ls -l "+OUTPUT_DIR+" | egrep \"^d\" | grep -i " + basename + " | wc -l"
     print("lancio comando %s" % comando)
-    output = subprocess.check_output(comando, shell=True).decode("utf-8").replace("\n","")
+    output = subprocess.check_output(comando, shell=True).decode("utf-8").replace("\n", "")
 
     print("il comando ha restituito %s" %(output))
     if (output == "0"):
@@ -36,7 +40,7 @@ def spostaFile(image_base, video, y):
         print("lancio comando %s" % comando)
         output = subprocess.check_output(comando, shell=True)
 
-    comando = "mv '" + video + "' '"+ OUTPUT_DIR + basename + "/"+video_name+"' 2>/dev/null"
+    comando = "mv '" + video + "' '"+ OUTPUT_DIR + basename + "/"+video_name.replace("'", "")+"' 2>/dev/null"
     print("lancio comando %s" % comando)
 
     try:
@@ -233,14 +237,22 @@ def function(int):
 print("inizio")
 
 
-thread1 = IlMioThread(1)
-thread2 = IlMioThread(2)
-thread3 = IlMioThread(3)
-thread4 = IlMioThread(4)
-thread5 = IlMioThread(5)
-thread6 = IlMioThread(6)
-thread7 = IlMioThread(7)
-thread8 = IlMioThread(8)
+#thread1 = IlMioThread(1)
+#thread2 = IlMioThread(2)
+#thread3 = IlMioThread(3)
+#thread4 = IlMioThread(4)
+#thread5 = IlMioThread(5)
+#thread6 = IlMioThread(6)
+#thread7 = IlMioThread(7)
+#thread8 = IlMioThread(8)
+p1=Process(target=function,args=(1,))
+p2=Process(target=function,args=(2,))
+p3=Process(target=function,args=(3,))
+p4=Process(target=function,args=(4,))
+p5=Process(target=function,args=(5,))
+p6=Process(target=function,args=(6,))
+p7=Process(target=function,args=(7,))
+p8=Process(target=function,args=(8,))
 
 out = subprocess.check_output("ls | grep config.cfg | wc -l", shell=True).rstrip()
 
@@ -297,12 +309,21 @@ print(image_unique_list)
 
 image_encoded=imageEncodeList()
 
-thread1.start()
-thread2.start()
-thread3.start()
-thread4.start()
-thread5.start()
-thread6.start()
-thread7.start()
-thread8.start()
+#thread1.start()
+#thread2.start()
+#thread3.start()
+#thread4.start()
+#thread5.start()
+#thread6.start()
+#thread7.start()
+#thread8.start()
 
+
+p1.start()
+p2.start()
+p3.start()
+p4.start()
+p5.start()
+p6.start()
+p7.start()
+p8.start()
