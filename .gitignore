@@ -4,3 +4,13 @@ config.cfg
 lista_image.txt
 
 lista_video.txt
+
+prove.py
+
+haarcascade_frontalface_default.xml
+
+trainer.yml
+
+prove2.py
+
+prove3.py

@@ -2,8 +2,17 @@ import face_recognition
 import cv2
 import os
 import subprocess
+import threading
+from threading import Thread
+import time
 
-
+class IlMioThread (Thread):
+   def __init__(self, num):
+      threading.Thread.__init__(self)
+      self.num = num
+   def run(self):
+      print ("Thr avviato")
+      function(self.num)
 
 def spostaFile(image_base, video, y):
 
@@ -71,8 +80,167 @@ def getUniqueValueList(image_list):
     print(unique)
     return unique
 
+def function(int):
+    start = time.time()
+    t1 = []
+    t2 = []
+    t3 = []
+    t4 = []
+    t5 = []
+    t6 = []
+    t7 = []
+    t8 = []
+    copia=[]
+    cnt=num_lines_video_num_parsed+1
+    idx_th=0
+
+#   for i in range(num_lines_video_num_parsed):
+#       if (i%2==0):
+#           even.append(i)
+#       else if (i%3==0):
+#           odd.append(i)
+
+#   if(int%2==0):
+#       copia=even
+#   else:
+#       copia=odd
+
+    while cnt > 1:
+        t1.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
+        t2.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
+        t3.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
+        t4.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
+        t5.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
+        t6.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
+        t7.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
+        t8.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
+
+    if int==1:
+        copia=t1
+    if int==2:
+        copia=t2
+    if int==3:
+        copia=t3
+    if int==4:
+        copia=t4
+    if int==5:
+        copia=t5
+    if int==6:
+        copia=t6
+    if int==7:
+        copia=t7
+    if int==8:
+        copia=t8
+
+
+    for k in copia:
+
+        check = False
+        video = LISTA_VIDEO_PATH + lista_video[k].rstrip()
+        print(video)
+        vidcap = cv2.VideoCapture(video)
+        success, image = vidcap.read()
+        count = 1000
+        count_matches = [0] * num_lines_valori_num_parsed
+        count_matches_unique = [0] * len(image_unique_list)
+        while success == True and check == False:
+
+            success, image = vidcap.read()
+
+            if (count % 250 == 0 and count > 1):
+
+                filename = LOADER_FRAME_DIR + "frame" + str(count) + ".jpg"
+                print(filename)
+
+                rgb_small = cv2.cvtColor(image, 4)
+
+                doCheck = 0
+                try:
+                    image_frame_encode = face_recognition.face_encodings(rgb_small)[0]
+                except:
+                    print("non ci sono volti nell'immagine frame")
+                    image_frame_encode = None
+                    doCheck = 1
+                for y in range(num_lines_valori_num_parsed):  ##
+                    if doCheck == 0:
+                        res = []
+
+
+                        try:
+                            res = face_recognition.compare_faces([image_encoded[y]], image_frame_encode)
+
+
+                        except:
+                            print("nessun match tra le immagini")
+                        try:
+                            exit_attempt = res[0]
+                        except:
+                            exit_attempt = False
+                        if exit_attempt == True:
+                            count_matches[y] = count_matches[y] + 1
+                            for n in range(len(image_unique_list)):
+                                if (image_base[y].lower()[:-4]) == image_unique_list[n]:
+                                    count_matches_unique[n] = count_matches_unique[n] + 1
+                                    print(
+                                        f"LA PERSONA E LA STESSA STONKS ,attualmente sono {count_matches[y]} - trovato match con {image_unique_list[n]}")
+                                if count_matches_unique[n] >= 10:
+                                    spostaFile(LISTA_IMMAGINI_PATH + image_unique_list[n], video, y)
+                                    check = True
+                                    for prova in range(len(image_unique_list)):
+                                        print(f"{image_unique_list[prova]} -  {count_matches_unique[prova]}")
+                                    break
+            if success == False:
+                print("non ho trovato nessun match sposto in altro")
+                spostaFile("ALTRO", video, y)
+            count += 1
+    end = time.time()
+
+    print(f"trascorso {end - start}")
+
 
 print("inizio")
+
+
+thread1 = IlMioThread(1)
+thread2 = IlMioThread(2)
+thread3 = IlMioThread(3)
+thread4 = IlMioThread(4)
+thread5 = IlMioThread(5)
+thread6 = IlMioThread(6)
+thread7 = IlMioThread(7)
+thread8 = IlMioThread(8)
 
 out = subprocess.check_output("ls | grep config.cfg | wc -l", shell=True).rstrip()
 
@@ -126,100 +294,15 @@ for i in range(num_lines_valori_num_parsed):
 image_unique_list=getUniqueValueList(image_aus)
 print(image_unique_list)
 
+
 image_encoded=imageEncodeList()
 
-
-
-
-for k in range(num_lines_video_num_parsed):
-
-    # vidcap = cv2.VideoCapture(lista_video[k])
-    check = False
-    video = LISTA_VIDEO_PATH+lista_video[k].rstrip()
-    print(video)
-    vidcap = cv2.VideoCapture(video)
-    success, image = vidcap.read()
-    #success=True
-    count = 1000
-    count_matches=[0]*num_lines_valori_num_parsed
-    count_matches_unique=[0]*len(image_unique_list)
-
-    #while count < 150001 and check == False and video!=LISTA_VIDEO_PATH+"lista.txt":
-    while success ==True and check == False :
-        ##TO DO impostare un triplo check per essere sicuri del match
-        ##success, image = vidcap.read()
-        ##vidcap.set(cv2.CAP_PROP_POS_FRAMES, count)
-        success, image = vidcap.read()
-
-        #success, image = vidcap.read()
-
-        if (count % 250 == 0 and count > 1):
-
-            #print(LOADER_FRAME_DIR+"frame%d.jpg" % count)
-            filename = LOADER_FRAME_DIR+"frame" + str(count) + ".jpg"
-            print(filename)
-            cv2.imwrite(filename, image)  # save frame as JPEG file
-
-            # confronto immagini
-            image_frame = face_recognition.load_image_file(filename)
-            doCheck=0
-
-            try:
-
-                image_frame_encode = face_recognition.face_encodings(image_frame)[0]
-
-            except:
-                print("non ci sono volti nell'immagine frame")
-                image_frame_encode = None
-                doCheck=1
-
-
-            for y in range(num_lines_valori_num_parsed):  ##
-
-                if  doCheck==0 :
-                    res = []
-                    # res[0]=False
-                #    print("utilizzo l'immagine %s" %(LISTA_IMMAGINI_PATH+image_base[y]))
-                   # image_conf = face_recognition.load_image_file(LISTA_IMMAGINI_PATH+image_base[y])
-                   # image_conf_encode = face_recognition.face_encodings(image_conf)[0]
-
-
-                    #print(image_frame_encode)
-
-                    try:
-                       # res = face_recognition.compare_faces([image_conf_encode], image_frame_encode)
-                       res = face_recognition.compare_faces([image_encoded[y]], image_frame_encode)
-                       #correct = face_recognition.face_distance([image_encoded[y]], image_frame_encode)
-                       #print(correct[0])
-                       #if correct[0]<=0.6:
-                       #    res[0]=True
-
-                    except:
-                        print("nessun match tra le immagini")
-
-                    try:
-                        exit_attempt = res[0]
-                    except:
-                        exit_attempt = False
-
-                    if exit_attempt == True:
-                        count_matches[y]=count_matches[y]+1
-                        for n in range(len(image_unique_list)):
-                            if (image_base[y].lower()[:-4]) ==image_unique_list[n]:
-                                count_matches_unique[n]=count_matches_unique[n]+1
-                                print(f"LA PERSONA E LA STESSA STONKS ,attualmente sono {count_matches[y]} - trovato match con {image_unique_list[n]}")
-                            if count_matches_unique[n]>=10 :
-                                spostaFile(LISTA_IMMAGINI_PATH+image_unique_list[n], video, y)
-                                check = True
-                                for prova in range(len(image_unique_list)):
-                                    print(f"{image_unique_list[prova]} -  {count_matches_unique[prova]}")
-                                break
-
-
-
-        if success==False:
-            print("non ho trovato nessun match sposto in altro")
-            spostaFile("ALTRO",video,y)
-        count += 1
-
+thread1.start()
+thread2.start()
+thread3.start()
+thread4.start()
+thread5.start()
+thread6.start()
+thread7.start()
+thread8.start()
 
