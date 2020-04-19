@@ -18,12 +18,12 @@ import time
 #      print ("Thr avviato")
 #      function(self.num)
 
-def spostaFile(image_base, video, y):
+def spostaFile(image_base, video, y,int):
 
-    print("la funzione spostaFile e stata richiamata con i seguenti parametri")
-    print("image_base-> %s"%(image_base))
-    print("video-> %s"%(video))
-    print("y-> %s"%(y))
+    print(f"processo {int} - la funzione spostaFile e stata richiamata con i seguenti parametri")
+    print(f"processo {int} - image_base-> {image_base}")
+    print(f"processo {int} - video-> {video}" )
+    print(f"processo {int} -  y-> {y}")
 
     basename = os.path.basename(
         image_base).replace(".jpg","").replace(".JPG","").replace(".png","").replace(".PNG","")
@@ -31,24 +31,24 @@ def spostaFile(image_base, video, y):
     video_name=os.path.basename(video)
 
     comando = "ls -l "+OUTPUT_DIR+" | egrep \"^d\" | grep -i " + basename + " | wc -l"
-    print("lancio comando %s" % comando)
+    print(f"processo {int} -  lancio comando  {comando}")
     output = subprocess.check_output(comando, shell=True).decode("utf-8").replace("\n", "")
 
-    print("il comando ha restituito %s" %(output))
+    print(f"processo {int} - il comando ha restituito {output}")
     if (output == "0"):
         comando = "mkdir "+OUTPUT_DIR + basename
-        print("lancio comando %s" % comando)
+        print("processo {int} -  lancio comando {comando}")
         output = subprocess.check_output(comando, shell=True)
 
-    comando = "mv '" + video + "' '"+ OUTPUT_DIR + basename + "/"+video_name.replace("'", "")+"' 2>/dev/null"
-    print("lancio comando %s" % comando)
+    comando = "mv '" + video + "' '"+ OUTPUT_DIR + basename + "/"+video_name.replace("'", "")+"' "
+    print(f"processo {int} - lancio comando {comando}")
 
     try:
 
         output = subprocess.check_output(comando, shell=True)
     except Exception as e :
-        print("non ho spostato il file per il seguente motivo")
-        print(str(e))
+        print(f"processo {int} - non ho spostato il file per il seguente motivo")
+        print(f"processo {int} - str(e)")
 
 ####################################################################
 
@@ -186,7 +186,7 @@ def function(int):
             if (count % 250 == 0 and count > 1):
 
                 filename = LOADER_FRAME_DIR + "frame" + str(count) + ".jpg"
-                print(filename)
+                #print(filename)
 
                 rgb_small = cv2.cvtColor(image, 4)
 
@@ -194,7 +194,7 @@ def function(int):
                 try:
                     image_frame_encode = face_recognition.face_encodings(rgb_small)[0]
                 except:
-                    print("non ci sono volti nell'immagine frame")
+                    #print("non ci sono volti nell'immagine frame")
                     image_frame_encode = None
                     doCheck = 1
                 for y in range(num_lines_valori_num_parsed):  ##
@@ -207,7 +207,8 @@ def function(int):
 
 
                         except:
-                            print("nessun match tra le immagini")
+                            #print("nessun match tra le immagini")
+                            None
                         try:
                             exit_attempt = res[0]
                         except:
@@ -217,21 +218,22 @@ def function(int):
                             for n in range(len(image_unique_list)):
                                 if (image_base[y].lower()[:-4]) == image_unique_list[n]:
                                     count_matches_unique[n] = count_matches_unique[n] + 1
-                                    print(
-                                        f"LA PERSONA E LA STESSA STONKS ,attualmente sono {count_matches[y]} - trovato match con {image_unique_list[n]}")
+                                  #  print(f"LA PERSONA E LA STESSA STONKS ,attualmente sono {count_matches[y]} - trovato match con {image_unique_list[n]}")
                                 if count_matches_unique[n] >= 10:
-                                    spostaFile(LISTA_IMMAGINI_PATH + image_unique_list[n], video, y)
+                                    spostaFile(LISTA_IMMAGINI_PATH + image_unique_list[n], video, y,int)
                                     check = True
                                     for prova in range(len(image_unique_list)):
-                                        print(f"{image_unique_list[prova]} -  {count_matches_unique[prova]}")
+                                        print(f"processo {int} - {image_unique_list[prova]} -  {count_matches_unique[prova]}")
                                     break
+                    if (check==True):
+                        break
             if success == False:
-                print("non ho trovato nessun match sposto in altro")
-                spostaFile("ALTRO", video, y)
+                print(f"processo {int} - non ho trovato nessun match sposto in altro")
+                spostaFile("ALTRO", video, y,int)
             count += 1
     end = time.time()
 
-    print(f"trascorso {end - start}")
+    print(f"processo {int} - trascorso {end - start}")
 
 
 print("inizio")
