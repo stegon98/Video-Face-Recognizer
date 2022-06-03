@@ -355,7 +355,7 @@ def function(int):
                                     if (image_base[y].lower()[:-4]) == image_unique_list[n]:
                                         count_matches_unique[n] = count_matches_unique[n] + 1
                                     #  print(f"LA PERSONA E LA STESSA STONKS ,attualmente sono {count_matches[y]} - trovato match con {image_unique_list[n]}")
-                                    if count_matches_unique[n] >= 100:
+                                    if count_matches_unique[n] >= 60:
                                         creaLink(image_unique_list[n], video, y,server_video)
                                         check = True
                                         for prova in range(len(count_matches_unique)):
