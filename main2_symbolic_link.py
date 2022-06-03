@@ -40,7 +40,7 @@ def creaLink(image_base, video, int,server_video):
         print("processo {int} -  lancio comando {comando}")
         output = subprocess.check_output(comando, shell=True)
 
-    comando = "sshpass -p "+PASSWORD+" ssh "+USERNAME+"@"+HOSTNAME+" -q -p 1492 ln -s \\'" + server_video + "\\' \\'" + OUTPUT_DIR +  basename+"/" + video_name.replace("'", "") + "\\' ";
+    comando = "sshpass -p "+PASSWORD+" ssh "+USERNAME+"@"+HOSTNAME+" -q -p 1492 ln -s \\'" + server_video + "\\' \\'" + OUTPUT_DIR +  basename+"/" + video_name.replace("'", "").replace("(","").replace(")","") + "\\' ";
     comando=comando.replace("///","/")
     print(f"processo {int} - lancio comando {comando}")
 
@@ -243,7 +243,7 @@ def function(int):
         cnt -= 1
         if cnt < 1:
             break
-        t5.append(idx_th)
+        """t5.append(idx_th)
         idx_th += 1
         cnt -= 1
         if cnt < 1:
@@ -262,7 +262,7 @@ def function(int):
         idx_th += 1
         cnt -= 1
         if cnt < 1:
-            break
+            break """
 
     if int == 1:
         copia = t1
@@ -272,14 +272,14 @@ def function(int):
         copia = t3
     if int == 4:
         copia = t4
-    if int == 5:
+    """if int == 5:
         copia = t5
     if int == 6:
         copia = t6
     if int == 7:
         copia = t7
     if int == 8:
-        copia = t8
+        copia = t8 """
 
     for k in copia:
 
@@ -303,7 +303,7 @@ def function(int):
             try:
                 tot_frame_video = count_frames(video)
                 print(f"durata video-> {tot_frame_video}")
-                frame_to_skip = round(tot_frame_video / 500)
+                frame_to_skip = round(tot_frame_video / 1000)
                 print(f"skip ogni {frame_to_skip}")
             except:
                 print(f"durata video-> errore ")
@@ -355,7 +355,7 @@ def function(int):
                                     if (image_base[y].lower()[:-4]) == image_unique_list[n]:
                                         count_matches_unique[n] = count_matches_unique[n] + 1
                                     #  print(f"LA PERSONA E LA STESSA STONKS ,attualmente sono {count_matches[y]} - trovato match con {image_unique_list[n]}")
-                                    if count_matches_unique[n] >= 50:
+                                    if count_matches_unique[n] >= 100:
                                         creaLink(image_unique_list[n], video, y,server_video)
                                         check = True
                                         for prova in range(len(count_matches_unique)):
@@ -446,5 +446,8 @@ else:
 #p7.start()
 #p8.start()
 
-with Pool(8) as p:
-    print(p.map(function, [1, 2, 3, 4, 5, 6, 7 ,8]))
+"""with Pool(8) as p:
+    print(p.map(function, [1, 2, 3, 4, 5, 6, 7 ,8]))"""
+
+with Pool(4) as p:
+    print(p.map(function, [1, 2, 3, 4]))
