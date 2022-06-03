@@ -6,6 +6,8 @@ INSTALL cmake
 INSTALL python-dlib  
 INSTALL opencv-python  (pip)  
 INSTALL face-recognition (pip)  
+INSTALL pysftp (pip)
+INSTALL sshpass (for mklink version)
 
 Before running the program you need to edit the config.cfg file to set the paths:  
 / home / stegon / PycharmProjects / IMAGES / -> path of image to search  
