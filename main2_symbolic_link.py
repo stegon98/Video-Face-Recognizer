@@ -40,8 +40,9 @@ def creaLink(image_base, video, int,server_video):
         print("processo {int} -  lancio comando {comando}")
         output = subprocess.check_output(comando, shell=True)
 
-    comando = "sshpass -p "+PASSWORD+" ssh "+USERNAME+"@"+HOSTNAME+" -q -p 1492 ln -s \\'" + server_video + "\\' \\'" + OUTPUT_DIR +  basename+"/" + video_name.replace("'", "").replace("(","").replace(")","") + "\\' ";
+    comando = "sshpass -p "+PASSWORD+" ssh "+USERNAME+"@"+HOSTNAME+" -q -p 1492 ln -s \\'" + server_video.replace(" ","\ ").replace("'","\\'").replace("(","").replace(")","").replace("&","\&") + "\\' \\'" + OUTPUT_DIR +  basename+"/" + video_name.replace("\'", "").replace("(","").replace(")","").replace(" ","\ ") + "\\' ";
     comando=comando.replace("///","/")
+
     print(f"processo {int} - lancio comando {comando}")
 
     try:
@@ -216,6 +217,14 @@ def function(int):
     t6 = []
     t7 = []
     t8 = []
+    t9 = []
+    t10 = []
+    t11 = []
+    t12 = []
+    t13 = []
+    t14 = []
+    t15 = []
+    t16 = []
     copia = []
     cnt = num_lines_video_num_parsed + 1
     idx_th = 0
@@ -243,7 +252,7 @@ def function(int):
         cnt -= 1
         if cnt < 1:
             break
-        """t5.append(idx_th)
+        t5.append(idx_th)
         idx_th += 1
         cnt -= 1
         if cnt < 1:
@@ -262,7 +271,47 @@ def function(int):
         idx_th += 1
         cnt -= 1
         if cnt < 1:
-            break """
+            break
+        t9.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
+        t10.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
+        t11.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
+        t12.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
+        t13.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
+        t14.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
+        t15.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
+        t16.append(idx_th)
+        idx_th += 1
+        cnt -= 1
+        if cnt < 1:
+            break
 
     if int == 1:
         copia = t1
@@ -272,14 +321,30 @@ def function(int):
         copia = t3
     if int == 4:
         copia = t4
-    """if int == 5:
+    if int == 5:
         copia = t5
     if int == 6:
         copia = t6
     if int == 7:
         copia = t7
     if int == 8:
-        copia = t8 """
+        copia = t8
+    if int == 9:
+        copia = t9
+    if int == 10:
+        copia = t10
+    if int == 11:
+        copia = t11
+    if int == 12:
+        copia = t12
+    if int == 13:
+        copia = t13
+    if int == 14:
+        copia = t14
+    if int == 15:
+        copia = t15
+    if int == 16:
+        copia = t16
 
     for k in copia:
 
@@ -332,28 +397,35 @@ def function(int):
                     for y in range(num_lines_valori_num_parsed):  ##
                         if doCheck == 0:
                             res = []
-
+                            molt=0
+                            exit_attempt=True
                             try:
-                                res = face_recognition.compare_faces([image_encoded[y]], image_frame_encode)
-                                # dis = face_recognition.face_distance([image_encoded[y]], image_frame_encode)
+                                #res = face_recognition.compare_faces([image_encoded[y]], image_frame_encode)
+                                dis = face_recognition.face_distance([image_encoded[y]], image_frame_encode)
+                                if dis<= 0.45:
+                                    molt=4
+                                elif dis<=0.48:
+                                    molt=3
+                                elif dis<=0.53:
+                                    molt=2
+                                elif dis<=0.58:
+                                    molt=1
+                                else:
+                                    molt=0
+                                    exit_attempt = False
                                 # print(f"diff image {dis}")
-
 
                             except:
                                 #print(f"nessun match tra le immagini {video}")
                                 # print(f"immagine encoded {[image_encoded[y]]} - frame encoded {image_frame_encode}")
-                                None
+                                exit_attempt=False
 
-                            # print(res[0])
-                            try:
-                                exit_attempt = res[0]
-                            except:
-                                exit_attempt = False
+
                             if exit_attempt == True:
-                                count_matches[y] = count_matches[y] + 1
+                                count_matches[y] = count_matches[y] + (1*molt)
                                 for n in range(len(image_unique_list)):
                                     if (image_base[y].lower()[:-4]) == image_unique_list[n]:
-                                        count_matches_unique[n] = count_matches_unique[n] + 1
+                                        count_matches_unique[n] = count_matches_unique[n] + (1*molt)
                                     #  print(f"LA PERSONA E LA STESSA STONKS ,attualmente sono {count_matches[y]} - trovato match con {image_unique_list[n]}")
                                     if count_matches_unique[n] >= 60:
                                         creaLink(image_unique_list[n], video, y,server_video)
@@ -368,6 +440,9 @@ def function(int):
                 if success == False:
                     print(f"processo {int} - non ho trovato nessun match sposto in altro")
                     creaLink("ALTRO", server_video, y,server_video)
+                    for prova in range(len(count_matches_unique)):
+                        print(f"processo {int} - {image_unique_list[prova]} -  {count_matches_unique[prova]}")
+
                 count += 1
             os.remove(video)
     end = time.time()
@@ -449,5 +524,5 @@ else:
 """with Pool(8) as p:
     print(p.map(function, [1, 2, 3, 4, 5, 6, 7 ,8]))"""
 
-with Pool(4) as p:
-    print(p.map(function, [1, 2, 3, 4]))
+with Pool(16) as p:
+    print(p.map(function, [1, 2, 3, 4,5,6,7,8,9,10,11,12,13,14,15,16]))
