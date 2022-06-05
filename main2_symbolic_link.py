@@ -91,16 +91,6 @@ def file_len(fname):
     return i + 1
 
 
-def save_to_file_encode(encoded_array, filename):
-    try:
-        with open(filename, "wb") as f:
-            pickle.dump(encoded_array, f)
-        return 0
-    except:
-        print("errore salvataggio del file dump")
-        return -1
-
-
 def load_from_file(filename):
     try:
         with open(filename, "rb") as f:
@@ -295,15 +285,6 @@ def function(int):
 
 print("inizio")
 
-p1 = Process(target=function, args=(1,))
-p2 = Process(target=function, args=(2,))
-p3 = Process(target=function, args=(3,))
-p4 = Process(target=function, args=(4,))
-p5 = Process(target=function, args=(5,))
-p6 = Process(target=function, args=(6,))
-p7 = Process(target=function, args=(7,))
-p8 = Process(target=function, args=(8,))
-
 out = subprocess.check_output("ls | grep config.cfg | wc -l", shell=True).rstrip()
 
 fileCfg = open('config.cfg', 'r')
@@ -354,15 +335,6 @@ if(int(leggiDaFile)==0):
 
 else:
     image_encoded = imageEncodeList_file()
-
-#p1.start()
-#p2.start()
-#p3.start()
-#p4.start()
-#p5.start()
-#p6.start()
-#p7.start()
-#p8.start()
 
 """with Pool(8) as p:
     print(p.map(function, [1, 2, 3, 4, 5, 6, 7 ,8]))"""
