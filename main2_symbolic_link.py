@@ -51,17 +51,14 @@ def creaLink(image_base, video, int,server_video):
         print(f"processo {int} - non ho spostato il file per il seguente motivo")
         print(f"processo {int} - str(e)")
 
-
 ####################################################################
 
 def caricaDaFile(num_val, file):
     list = []
     for v in range(int(num_val)):  ## carico all'interno dell'array
-
         list.append(file.readline().rstrip())
 
     file.close()
-
     return list
 
 
@@ -81,49 +78,11 @@ def imageEncodeList():
     filehandler=open("immagini_encoded.dump","wb")
     pickle.dump(image,filehandler)
     filehandler.close()
-
     return image
 
 def imageEncodeList_file():
     filehandler = open("immagini_encoded.dump","rb")
-
     return pickle.load(filehandler)
-
-
-def load_from_file_mp(who, start, end):
-    image = []
-    count = 1
-    enable_read = False
-    for i in os.listdir(LISTA_IMMAGINI_PATH):
-        if count > start:
-            if not i.endswith(".txt"):
-                try:
-
-                    image_frame = face_recognition.load_image_file(LISTA_IMMAGINI_PATH + i)
-                    cod = face_recognition.face_encodings(image_frame)[0]
-                    image.append(cod)
-
-
-
-                except:
-                    print(f"nessun immagine {LISTA_IMMAGINI_PATH + i}")
-                    output = subprocess.check_output(
-                        "mv " + LISTA_IMMAGINI_PATH + i + " /run/media/stegon/131ac7e7-32e9-457b-92e0-7068ecf6c2d7/LOADER/",
-                        shell=True)
-
-        if count >= end:
-            break
-        count = count + 1
-
-    if who == 1:
-        save_to_file_encode(image, "load1.dump")
-    if who == 2:
-        save_to_file_encode(image, "load2.dump")
-    if who == 3:
-        save_to_file_encode(image, "load3.dump")
-    if who == 4:
-        save_to_file_encode(image, "load4.dump")
-
 
 def file_len(fname):
     with open(fname) as f:
@@ -134,7 +93,6 @@ def file_len(fname):
 
 def save_to_file_encode(encoded_array, filename):
     try:
-
         with open(filename, "wb") as f:
             pickle.dump(encoded_array, f)
         return 0
@@ -156,10 +114,8 @@ def load_from_file(filename):
 
 def getUniqueValueList(image_list):
     myset = set(image_list)
-    unique = []
-    unique = [item for item in myset if item not in unique]
     # print(unique)
-    return unique
+    return [item for item in myset if item not in unique]
 
 
 def count_frames(path, override=False):
@@ -225,129 +181,21 @@ def function(int):
     t14 = []
     t15 = []
     t16 = []
+    tn=[ t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15, t16 ]
     copia = []
     cnt = num_lines_video_num_parsed + 1
     idx_th = 0
 
-
-
     while cnt > 1:
-        t1.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t2.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t3.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t4.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t5.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t6.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t7.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t8.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t9.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t10.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t11.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t12.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t13.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t14.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t15.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t16.append(idx_th)
+        tn[idx_th%16].append(idx_th)
         idx_th += 1
         cnt -= 1
         if cnt < 1:
             break
 
-    if int == 1:
-        copia = t1
-    if int == 2:
-        copia = t2
-    if int == 3:
-        copia = t3
-    if int == 4:
-        copia = t4
-    if int == 5:
-        copia = t5
-    if int == 6:
-        copia = t6
-    if int == 7:
-        copia = t7
-    if int == 8:
-        copia = t8
-    if int == 9:
-        copia = t9
-    if int == 10:
-        copia = t10
-    if int == 11:
-        copia = t11
-    if int == 12:
-        copia = t12
-    if int == 13:
-        copia = t13
-    if int == 14:
-        copia = t14
-    if int == 15:
-        copia = t15
-    if int == 16:
-        copia = t16
+    copia = tn[int-1]
 
     for k in copia:
-
         check = False
         cnopts = pysftp.CnOpts()
         cnopts.hostkeys = None
@@ -375,20 +223,15 @@ def function(int):
                 frame_to_skip = 50
 
             while success == True and check == False:
-
                 success, image = vidcap.read()
 
                 if (count % frame_to_skip == 0 and count > 1):
-
                     filename = LOADER_FRAME_DIR + "frame" + str(count) + ".jpg"
                     # print(filename)
-
                     # rgb_small = cv2.cvtColor(image, 4)
-
                     doCheck = 0
                     try:
                         image_frame_encode = face_recognition.face_encodings(image)[0]
-
 
                     except:
                         #print("non ci sono volti nell'immagine frame")
