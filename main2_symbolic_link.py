@@ -13,7 +13,9 @@ import pickle
 import hashlib
 import time
 import pysftp
+from shlex import quote
 
+TOT_THREAD=4
 
 # I thread sono stati accantonati in quanto in python non sono gestiti in maniera corretta, abbiamo quindi optato per l'utilizzo di piu' processi
 # https://stackoverflow.com/questions/10789042/python-multi-threading-slower-than-serial
@@ -39,9 +41,9 @@ def creaLink(image_base, video, int,server_video):
         comando = "sshpass -p "+PASSWORD+" ssh "+USERNAME+"@"+HOSTNAME+" -q -p 1492 mkdir " + OUTPUT_DIR + basename
         print("processo {int} -  lancio comando {comando}")
         output = subprocess.check_output(comando, shell=True)
-
-    comando = "sshpass -p "+PASSWORD+" ssh "+USERNAME+"@"+HOSTNAME+" -q -p 1492 ln -s \\'" + server_video.replace(" ","\ ").replace("'","\\'").replace("(","").replace(")","").replace("&","\&") + "\\' \\'" + OUTPUT_DIR +  basename+"/" + video_name.replace("\'", "").replace("(","").replace(")","").replace(" ","\ ") + "\\' ";
-    comando=comando.replace("///","/")
+    comando_ls="ln -s " + server_video.replace(" ","\ ").replace("'","\\'").replace("(","\(").replace(")","\(").replace("&","\&") + " " + OUTPUT_DIR +  basename+"/" + video_name.replace("\'", "").replace("(","").replace(")","").replace(" ","\ ") + " "
+    #comando = "sshpass -p "+PASSWORD+" ssh "+USERNAME+"@"+HOSTNAME+" -q -p 1492 "+comando_ls
+    comando="sshpass -p "+PASSWORD+" ssh "+USERNAME+"@"+HOSTNAME+" -q -p 1492 \"ln -s  {0}  {1}" .format("'"+server_video+"'", "'"+OUTPUT_DIR +  basename+"/" + video_name + "'\"")
 
     print(f"processo {int} - lancio comando {comando}")
 
@@ -49,7 +51,11 @@ def creaLink(image_base, video, int,server_video):
         output = subprocess.check_output(comando, shell=True)
     except Exception as e:
         print(f"processo {int} - non ho spostato il file per il seguente motivo")
-        print(f"processo {int} - str(e)")
+        print(f"processo {int} - {str(e)}")
+        try:
+            subprocess.check_output("echo " + comando_ls + " >>../comandiInErrore", shell=True)
+        except:
+            print(f"errore salvataggio comando in errore {int} - {str(e)}")
 
 
 ####################################################################
@@ -57,11 +63,9 @@ def creaLink(image_base, video, int,server_video):
 def caricaDaFile(num_val, file):
     list = []
     for v in range(int(num_val)):  ## carico all'interno dell'array
-
         list.append(file.readline().rstrip())
 
     file.close()
-
     return list
 
 
@@ -81,66 +85,17 @@ def imageEncodeList():
     filehandler=open("immagini_encoded.dump","wb")
     pickle.dump(image,filehandler)
     filehandler.close()
-
     return image
 
 def imageEncodeList_file():
     filehandler = open("immagini_encoded.dump","rb")
-
     return pickle.load(filehandler)
-
-
-def load_from_file_mp(who, start, end):
-    image = []
-    count = 1
-    enable_read = False
-    for i in os.listdir(LISTA_IMMAGINI_PATH):
-        if count > start:
-            if not i.endswith(".txt"):
-                try:
-
-                    image_frame = face_recognition.load_image_file(LISTA_IMMAGINI_PATH + i)
-                    cod = face_recognition.face_encodings(image_frame)[0]
-                    image.append(cod)
-
-
-
-                except:
-                    print(f"nessun immagine {LISTA_IMMAGINI_PATH + i}")
-                    output = subprocess.check_output(
-                        "mv " + LISTA_IMMAGINI_PATH + i + " /run/media/stegon/131ac7e7-32e9-457b-92e0-7068ecf6c2d7/LOADER/",
-                        shell=True)
-
-        if count >= end:
-            break
-        count = count + 1
-
-    if who == 1:
-        save_to_file_encode(image, "load1.dump")
-    if who == 2:
-        save_to_file_encode(image, "load2.dump")
-    if who == 3:
-        save_to_file_encode(image, "load3.dump")
-    if who == 4:
-        save_to_file_encode(image, "load4.dump")
-
 
 def file_len(fname):
     with open(fname) as f:
         for i, l in enumerate(f):
             pass
     return i + 1
-
-
-def save_to_file_encode(encoded_array, filename):
-    try:
-
-        with open(filename, "wb") as f:
-            pickle.dump(encoded_array, f)
-        return 0
-    except:
-        print("errore salvataggio del file dump")
-        return -1
 
 
 def load_from_file(filename):
@@ -209,145 +164,23 @@ def count_frames_manual(video):
 
 def function(int):
     start = time.time()
-    t1 = []
-    t2 = []
-    t3 = []
-    t4 = []
-    t5 = []
-    t6 = []
-    t7 = []
-    t8 = []
-    t9 = []
-    t10 = []
-    t11 = []
-    t12 = []
-    t13 = []
-    t14 = []
-    t15 = []
-    t16 = []
+    tn=[ ]
+    for i in range(TOT_THREAD):
+        tn.append([])
     copia = []
     cnt = num_lines_video_num_parsed + 1
     idx_th = 0
 
-
-
     while cnt > 1:
-        t1.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t2.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t3.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t4.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t5.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t6.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t7.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t8.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t9.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t10.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t11.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t12.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t13.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t14.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t15.append(idx_th)
-        idx_th += 1
-        cnt -= 1
-        if cnt < 1:
-            break
-        t16.append(idx_th)
+        tn[idx_th%TOT_THREAD].append(idx_th)
         idx_th += 1
         cnt -= 1
         if cnt < 1:
             break
 
-    if int == 1:
-        copia = t1
-    if int == 2:
-        copia = t2
-    if int == 3:
-        copia = t3
-    if int == 4:
-        copia = t4
-    if int == 5:
-        copia = t5
-    if int == 6:
-        copia = t6
-    if int == 7:
-        copia = t7
-    if int == 8:
-        copia = t8
-    if int == 9:
-        copia = t9
-    if int == 10:
-        copia = t10
-    if int == 11:
-        copia = t11
-    if int == 12:
-        copia = t12
-    if int == 13:
-        copia = t13
-    if int == 14:
-        copia = t14
-    if int == 15:
-        copia = t15
-    if int == 16:
-        copia = t16
+    copia = tn[int-1]
 
     for k in copia:
-
         check = False
         cnopts = pysftp.CnOpts()
         cnopts.hostkeys = None
@@ -375,20 +208,15 @@ def function(int):
                 frame_to_skip = 50
 
             while success == True and check == False:
-
                 success, image = vidcap.read()
 
                 if (count % frame_to_skip == 0 and count > 1):
-
                     filename = LOADER_FRAME_DIR + "frame" + str(count) + ".jpg"
                     # print(filename)
-
                     # rgb_small = cv2.cvtColor(image, 4)
-
                     doCheck = 0
                     try:
                         image_frame_encode = face_recognition.face_encodings(image)[0]
-
 
                     except:
                         #print("non ci sono volti nell'immagine frame")
@@ -452,15 +280,6 @@ def function(int):
 
 print("inizio")
 
-p1 = Process(target=function, args=(1,))
-p2 = Process(target=function, args=(2,))
-p3 = Process(target=function, args=(3,))
-p4 = Process(target=function, args=(4,))
-p5 = Process(target=function, args=(5,))
-p6 = Process(target=function, args=(6,))
-p7 = Process(target=function, args=(7,))
-p8 = Process(target=function, args=(8,))
-
 out = subprocess.check_output("ls | grep config.cfg | wc -l", shell=True).rstrip()
 
 fileCfg = open('config.cfg', 'r')
@@ -512,17 +331,12 @@ if(int(leggiDaFile)==0):
 else:
     image_encoded = imageEncodeList_file()
 
-#p1.start()
-#p2.start()
-#p3.start()
-#p4.start()
-#p5.start()
-#p6.start()
-#p7.start()
-#p8.start()
-
 """with Pool(8) as p:
     print(p.map(function, [1, 2, 3, 4, 5, 6, 7 ,8]))"""
 
-with Pool(16) as p:
-    print(p.map(function, [1, 2, 3, 4,5,6,7,8,9,10,11,12,13,14,15,16]))
+processParameter=[]
+for i in range(TOT_THREAD):
+    processParameter.append(i)
+
+with Pool(TOT_THREAD) as p:
+    print(p.map(function, processParameter))
