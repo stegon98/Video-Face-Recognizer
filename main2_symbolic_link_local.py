@@ -4,18 +4,14 @@ import face_recognition
 import cv2
 import os
 import subprocess
-import threading
-from threading import Thread
 from multiprocessing import Process, Queue
 from multiprocessing import Pool
 import time
 import pickle
-import hashlib
 import time
-import pysftp
 from shlex import quote
 
-TOT_THREAD=4
+TOT_THREAD=8
 
 # I thread sono stati accantonati in quanto in python non sono gestiti in maniera corretta, abbiamo quindi optato per l'utilizzo di piu' processi
 # https://stackoverflow.com/questions/10789042/python-multi-threading-slower-than-serial
@@ -32,18 +28,17 @@ def creaLink(image_base, video, int,server_video):
 
     video_name = os.path.basename(video)
 
-    comando = "sshpass -p "+PASSWORD+" ssh "+USERNAME+"@"+HOSTNAME+" -q "+PORT+" ls -l " + OUTPUT_DIR + " | egrep \"^d\" | grep -i " + basename + " | wc -l"
+    comando = "ls -l " + OUTPUT_DIR + " | egrep \"^d\" | grep -i " + basename + " | wc -l"
     print(f"processo {int} -  lancio comando  {comando}")
     output = subprocess.check_output(comando, shell=True).decode("utf-8").replace("\n", "")
 
     print(f"processo {int} - il comando ha restituito {output}")
     if (output == "0"):
-        comando = "sshpass -p "+PASSWORD+" ssh "+USERNAME+"@"+HOSTNAME+" -q "+PORT+" mkdir " + OUTPUT_DIR + basename
+        comando = " mkdir " + OUTPUT_DIR + basename
         print("processo {int} -  lancio comando {comando}")
         output = subprocess.check_output(comando, shell=True)
     comando_ls="ln -s " + server_video.replace(" ","\ ").replace("'","\\'").replace("(","\(").replace(")","\(").replace("&","\&") + " " + OUTPUT_DIR +  basename+"/" + video_name.replace("\'", "").replace("(","").replace(")","").replace(" ","\ ") + " "
-    #comando = "sshpass -p "+PASSWORD+" ssh "+USERNAME+"@"+HOSTNAME+" -q "+PORT+" "+comando_ls
-    comando="sshpass -p "+PASSWORD+" ssh "+USERNAME+"@"+HOSTNAME+" -q "+PORT+" \"ln -s  {0}  {1}" .format("'"+server_video+"'", "'"+OUTPUT_DIR +  basename+"/" + video_name + "'\"")
+    comando="ln -s  {0}  {1}" .format("'"+server_video+"'", "'"+OUTPUT_DIR +  basename+"/" + video_name + "'")
 
     print(f"processo {int} - lancio comando {comando}")
 
@@ -78,10 +73,10 @@ def imageEncodeList():
                 image_frame = face_recognition.load_image_file(LISTA_IMMAGINI_PATH + i)
                 cod = face_recognition.face_encodings(image_frame)[0]
                 image.append(cod)
-                print(f"aggiunta immagine {LISTA_IMMAGINI_PATH}/{i}")
+                print(f"aggiunta immagine {LISTA_IMMAGINI_PATH}{i}")
             except:
                 print(f"nessun immagine {LISTA_IMMAGINI_PATH + i}")
-                output = subprocess.check_output("mv " + LISTA_IMMAGINI_PATH + i + " ../LOADER/", shell=True)
+                output = subprocess.check_output("mv " + LISTA_IMMAGINI_PATH + i + " ../broken_image/", shell=True)
     filehandler=open("immagini_encoded.dump","wb")
     pickle.dump(image,filehandler)
     filehandler.close()
@@ -162,7 +157,7 @@ def count_frames_manual(video):
     return total
 
 
-def function(int):
+def function(proc_id):
     start = time.time()
     tn=[ ]
     for i in range(TOT_THREAD):
@@ -178,104 +173,91 @@ def function(int):
         if cnt < 1:
             break
 
-    copia = tn[int-1]
+    copia = tn[proc_id-1]
 
     for k in copia:
         check = False
-        cnopts = pysftp.CnOpts()
-        cnopts.hostkeys = None
-        time.sleep(1)
-        with pysftp.Connection(host=HOSTNAME, username=USERNAME, password=PASSWORD,  cnopts=cnopts, port=PORT) as sftp:
-            print("Connection successfully established ... ")
-            # Switch to a remote directory
-            sftp.cd(LISTA_VIDEO_PATH)
-            sftp.get(lista_video[k].rstrip())
-            server_video=lista_video[k].rstrip()
-            video = os.path.basename(lista_video[k].rstrip())
-            print(video)
-            vidcap = cv2.VideoCapture(video)
+        #server_video=lista_video[k].rstrip()
+        video = lista_video[k].rstrip()
+        print(video)
+        vidcap = cv2.VideoCapture(video)
+        success, image = vidcap.read()
+        count = 500
+        count_matches = [0] * num_lines_valori_num_parsed
+        count_matches_unique = [0] * len(image_unique_list)
+        try:
+            tot_frame_video = count_frames(video)
+            print(f"durata video-> {tot_frame_video}")
+            frame_to_skip = round(tot_frame_video / 500)
+            print(f"skip ogni {frame_to_skip}")
+        except:
+            print(f"durata video-> errore ")
+            frame_to_skip = 50
+
+        while success == True and check == False:
             success, image = vidcap.read()
-            count = 500
-            count_matches = [0] * num_lines_valori_num_parsed
-            count_matches_unique = [0] * len(image_unique_list)
-            try:
-                tot_frame_video = count_frames(video)
-                print(f"durata video-> {tot_frame_video}")
-                frame_to_skip = round(tot_frame_video / 1000)
-                print(f"skip ogni {frame_to_skip}")
-            except:
-                print(f"durata video-> errore ")
-                frame_to_skip = 50
 
-            while success == True and check == False:
-                success, image = vidcap.read()
+            if (count % frame_to_skip == 0 and count > 1):
+                doCheck = 0
+                try:
+                    image_frame_encode = face_recognition.face_encodings(image)[0]
 
-                if (count % frame_to_skip == 0 and count > 1):
-                    filename = LOADER_FRAME_DIR + "frame" + str(count) + ".jpg"
-                    # print(filename)
-                    # rgb_small = cv2.cvtColor(image, 4)
-                    doCheck = 0
-                    try:
-                        image_frame_encode = face_recognition.face_encodings(image)[0]
+                except:
+                    #print("non ci sono volti nell'immagine frame")
+                    image_frame_encode = None
+                    doCheck = 1
+                for y in range(num_lines_valori_num_parsed):  ##
+                    if doCheck == 0:
+                        res = []
+                        molt=0
+                        exit_attempt=True
+                        try:
+                            #res = face_recognition.compare_faces([image_encoded[y]], image_frame_encode)
+                            dis = face_recognition.face_distance([image_encoded[y]], image_frame_encode)
+                            if dis<= 0.45:
+                                molt=4
+                            elif dis<=0.48:
+                                molt=3
+                            elif dis<=0.53:
+                                molt=2
+                            elif dis<=0.58:
+                                molt=1
+                            else:
+                                molt=0
+                                exit_attempt = False
+                            # print(f"diff image {dis}")
 
-                    except:
-                        #print("non ci sono volti nell'immagine frame")
-                        image_frame_encode = None
-                        doCheck = 1
-                    for y in range(num_lines_valori_num_parsed):  ##
-                        if doCheck == 0:
-                            res = []
-                            molt=0
-                            exit_attempt=True
-                            try:
-                                #res = face_recognition.compare_faces([image_encoded[y]], image_frame_encode)
-                                dis = face_recognition.face_distance([image_encoded[y]], image_frame_encode)
-                                if dis<= 0.45:
-                                    molt=4
-                                elif dis<=0.48:
-                                    molt=3
-                                elif dis<=0.53:
-                                    molt=2
-                                elif dis<=0.58:
-                                    molt=1
-                                else:
-                                    molt=0
-                                    exit_attempt = False
-                                # print(f"diff image {dis}")
-
-                            except:
-                                #print(f"nessun match tra le immagini {video}")
-                                # print(f"immagine encoded {[image_encoded[y]]} - frame encoded {image_frame_encode}")
-                                exit_attempt=False
+                        except:
+                            #print(f"nessun match tra le immagini {video}")
+                            # print(f"immagine encoded {[image_encoded[y]]} - frame encoded {image_frame_encode}")
+                            exit_attempt=False
 
 
-                            if exit_attempt == True:
-                                count_matches[y] = count_matches[y] + (1*molt)
-                                for n in range(len(image_unique_list)):
-                                    if (image_base[y].lower()[:-4]) == image_unique_list[n]:
-                                        count_matches_unique[n] = count_matches_unique[n] + (1*molt)
-                                    #  print(f"LA PERSONA E LA STESSA STONKS ,attualmente sono {count_matches[y]} - trovato match con {image_unique_list[n]}")
-                                    if count_matches_unique[n] >= 60:
-                                        creaLink(image_unique_list[n], video, y,server_video)
-                                        check = True
-                                        for prova in range(len(count_matches_unique)):
-                                            print(f"processo {int} - {image_unique_list[prova]} -  {count_matches_unique[prova]}")
+                        if exit_attempt == True:
+                            count_matches[y] = count_matches[y] + (1*molt)
+                            for n in range(len(image_unique_list)):
+                                if (image_base[y].lower()[:-4]) == image_unique_list[n]:
+                                    count_matches_unique[n] = count_matches_unique[n] + (1*molt)
+                                if count_matches_unique[n] >= int(MATCH_REQUIRED):
+                                    creaLink(image_unique_list[n], video, y,video)
+                                    check = True
+                                    for prova in range(len(count_matches_unique)):
+                                        print(f"processo {proc_id} - {image_unique_list[prova]} -  {count_matches_unique[prova]}")
 
-                                # for row in range(len(count_matches_unique)):
-                                #    print(f"processo {int} - {image_unique_list[row]} -  {count_matches_unique[row]}")
-                        if (check == True):
-                            break
-                if success == False:
-                    print(f"processo {int} - non ho trovato nessun match sposto in altro")
-                    creaLink("ALTRO", server_video, y,server_video)
-                    for prova in range(len(count_matches_unique)):
-                        print(f"processo {int} - {image_unique_list[prova]} -  {count_matches_unique[prova]}")
+                            # for row in range(len(count_matches_unique)):
+                            #    print(f"processo {int} - {image_unique_list[row]} -  {count_matches_unique[row]}")
+                    if (check == True):
+                        break
+            if success == False:
+                print(f"processo {proc_id} - non ho trovato nessun match sposto in altro")
+                creaLink("ALTRO", video, y,video)
+                for prova in range(len(count_matches_unique)):
+                    print(f"processo {proc_id} - {image_unique_list[prova]} -  {count_matches_unique[prova]}")
 
-                count += 1
-            os.remove(video)
+            count += 1
     end = time.time()
 
-    print(f"processo {int} - trascorso {end - start}")
+    print(f"processo {proc_id} - trascorso {end - start}")
 
 
 print("inizio")
@@ -287,15 +269,11 @@ fileCfg = open('config.cfg', 'r')
 LISTA_IMMAGINI_PATH = fileCfg.readline().rstrip()
 LISTA_VIDEO_PATH = fileCfg.readline().rstrip()
 OUTPUT_DIR = fileCfg.readline().rstrip()
-LOADER_FRAME_DIR = fileCfg.readline().rstrip()
-HOSTNAME = os.environ["HOSTNAME"]
-USERNAME = os.environ["USERNAME"]
-PASSWORD = os.environ["PASSWORD"]
-PORT = os.environ["PORT"]
+MATCH_REQUIRED= fileCfg.readline().rstrip()
 fileCfg.close()
 
 subprocess.call("find " + LISTA_IMMAGINI_PATH + " -maxdepth 1 -type f -exec basename \"{}\" > " "lista_image.txt \\;",shell=True)  # sum(1 for line in open('VALORI.txt'))
-subprocess.call("sshpass -p "+PASSWORD+" ssh "+USERNAME+"@"+HOSTNAME+" -q "+PORT+" find " + LISTA_VIDEO_PATH + " -maxdepth 1 -type f  >  lista_video.txt ",shell=True)  # sum(1 for line in open('VALORI.txt'))
+subprocess.call("find " + LISTA_VIDEO_PATH + " -maxdepth 1 -type f  >  lista_video.txt ",shell=True)  # sum(1 for line in open('VALORI.txt'))
 
 num_lines_valori_num = subprocess.check_output(['wc', '-l', "lista_image.txt"]).decode("utf-8")
 num_lines_video_num = subprocess.check_output(['wc', '-l', "lista_video.txt"]).decode("utf-8")
