@@ -11,11 +11,10 @@ import pickle
 import time
 from shlex import quote
 
-TOT_THREAD=4
+TOT_THREAD=16
 
 # I thread sono stati accantonati in quanto in python non sono gestiti in maniera corretta, abbiamo quindi optato per l'utilizzo di piu' processi
 # https://stackoverflow.com/questions/10789042/python-multi-threading-slower-than-serial
-
 
 def generateLinkCommand(image_base, video, int,server_video):
     print(f"processo {int} - la funzione generateLinkCommand e stata richiamata con i seguenti parametri")
@@ -28,10 +27,10 @@ def generateLinkCommand(image_base, video, int,server_video):
 
     video_name = os.path.basename(video)
 
-    comando="mv  '{0}'  '{1}'" .format("'"+server_video+"'", "'"+server_video+"_bk'")
+    comando="mv  §{0}§  §{1}§".format(server_video, server_video+"_bk")
 
     print(f"processo {int} -  lancio comando  {comando}")
-    output = subprocess.check_output("echo {0} >>comandi.txt".format(comando), shell=True).decode("utf-8").replace("\n", "")
+    output = subprocess.check_output("echo '{0}' >>comandi.txt".format(comando), shell=True).decode("utf-8").replace("\n", "")
 
     print(f"processo {int} - il comando ha restituito {output}")
     if (output == "0"):
@@ -39,12 +38,12 @@ def generateLinkCommand(image_base, video, int,server_video):
         print("processo {int} -  lancio comando {comando}")
         output = subprocess.check_output(comando, shell=True)
     #comando="ln -s  {0}  {1}" .format("'"+server_video+"'", "'"+OUTPUT_DIR +  basename+"/" + video_name + "'")
-    comando="ffmpeg -i '{0}' -metadata artist={1} -codec copy '{2}'".format("'"+server_video+"_bk'",basename, "'"+OUTPUT_DIR+"/" + video_name+"'")
+    comando="ffmpeg -i §{0}§ -metadata artist=§{1}§ -codec copy §{2}§".format(server_video+"_bk",basename, OUTPUT_DIR+"/" + video_name)
 
     print(f"processo {int} - lancio comando {comando}")
 
     try:
-        output = subprocess.check_output("echo {0} >>comandi.txt".format(comando), shell=True).decode("utf-8").replace("\n", "")
+        output = subprocess.check_output("echo '{0}' >>comandi.txt".format(comando), shell=True).decode("utf-8").replace("\n", "")
     except Exception as e:
         print(f"processo {int} - non ho spostato il file per il seguente motivo")
         print(f"processo {int} - {str(e)}")
@@ -52,7 +51,6 @@ def generateLinkCommand(image_base, video, int,server_video):
             subprocess.check_output("echo " + comando_ls + " >>comandiInErrore", shell=True)
         except:
             print(f"errore salvataggio comando in errore {int} - {str(e)}")
-
 
 ####################################################################
 
@@ -189,7 +187,7 @@ def function(proc_id):
         try:
             tot_frame_video = count_frames(video)
             print(f"durata video-> {tot_frame_video}")
-            frame_to_skip = round(tot_frame_video / 250)
+            frame_to_skip = round(tot_frame_video / 1000)
             print(f"skip ogni {frame_to_skip}")
         except:
             print(f"durata video-> errore ")
