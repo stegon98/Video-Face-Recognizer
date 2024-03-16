@@ -1,18 +1,19 @@
-Video-Face-Recognizer
-It's reguired python3.8  
+<h1>Video-Face-Recognizer</h1>
 
+✅ It's reguired **python3**
 
-INSTALL cmake  
-INSTALL python-dlib  
-INSTALL opencv-python  (pip)  
-INSTALL face-recognition (pip)  
-INSTALL pysftp (pip)
-INSTALL sshpass (for mklink version)
+✅ install cmake **apt install cmake**
 
-Before running the program you need to edit the config.cfg file to set the paths:  
-/ home / stegon / PycharmProjects / IMAGES / -> path of image to search  
-/ run / media / stegon / DISK1 / VIDEOS / -> path of video sources  
-/ run / media / stegon / DISK1 / VIDEOS_OUTPUT / -> path of output video (folders with actor's name will be created and videos                                                                           will be inserted inside)    
-/ home / stegon / PycharmProjects / LOADER / -> path of extracted frame of video (Deprecated)
+✅ install the pip requirements **pip install --no-cache-dir -r requirements.txt**
 
-If there are more images with the same name but with a different extension, the matches will be added together, for greater precision it would be better to have more images per actor  
+Before running the program you need to edit set the following environment variable **$VIDEO_DIR** and **$IMG_DIR**
+
+If there are more images with the same name but with a different extension, the matches will be added together, for greater precision it would be better to have more images per actor
+
+<h1>Docker</h1>
+
+Build image **docker build . -t vfr2**
+
+Run container with this command:
+
+>docker run -v /video_path:/app/video -v /image_path:/app/img -v /output_cmd_list:/app/output -it vfr2
