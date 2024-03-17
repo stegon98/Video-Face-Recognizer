@@ -29,4 +29,4 @@ ENV IMG_DIR "/app/img"
 
 
 # Comando di esecuzione predefinito quando il container viene avviato
-CMD [ "python", "./mainV2.py" ]
+CMD [ "python3", "./mainV2.py" ]

@@ -45,14 +45,14 @@ def count_faces_in_video(video_path, actor_encodings):
         if any(count >= 100 for count in actor_face_counts.values()):
             break
         # Skip 60 frames
-        for _ in range(60):
+        for _ in range(30):
             video_capture.grab()
 
         ret, frame = video_capture.retrieve()
         if not ret:
             break
 
-        frame_count += 60  # Increment frame count by 10
+        frame_count += 30  # Increment frame count by 10
         #progress_bar.update(60)  # Increment progress bar by 10 frames
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         face_locations = face_recognition.face_locations(rgb_frame)
@@ -60,9 +60,22 @@ def count_faces_in_video(video_path, actor_encodings):
 
         for face_encoding in face_encodings:
             for actor_name, actor_encoding in actor_encodings.items():
-                match = face_recognition.compare_faces([actor_encoding], face_encoding,tolerance=0.4)
-                if match[0]:
-                    actor_face_counts[actor_name] += 1
+                #match = face_recognition.compare_faces([actor_encoding], face_encoding,tolerance=0.4)
+                #if match[0]:
+                #    actor_face_counts[actor_name] += 1
+                dis = face_recognition.face_distance([actor_encoding], face_encoding)
+                if dis<= 0.43:
+                    molt=4
+                elif dis<=0.45:
+                    molt=3
+                elif dis<=0.48:
+                    molt=2
+                elif dis<=0.50:
+                    molt=1
+                else:
+                    molt=0
+
+                actor_face_counts[actor_name] += molt
 
     video_actor = max(actor_face_counts, key=actor_face_counts.get)
     #progress_bar.close()
@@ -81,7 +94,7 @@ def count_faces_in_video(video_path, actor_encodings):
 
 def process_video(video_folder, actor_image_folder):
     actor_encodings = encode_faces_in_folder(actor_image_folder)
-    video_files = [os.path.join(video_folder, file) for file in os.listdir(video_folder) if file.endswith('.mp4')]
+    video_files = [os.path.join(video_folder, file) for file in os.listdir(video_folder)]
     ffmpeg_commands = []
 
     count_faces_partial = partial(count_faces_in_video, actor_encodings=actor_encodings)
